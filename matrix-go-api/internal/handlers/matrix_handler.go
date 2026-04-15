@@ -3,7 +3,6 @@ package handlers
 import (
 	"matrix-go-api/internal/models"
 	"matrix-go-api/internal/services"
-
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -30,12 +29,21 @@ func (h *MatrixHandler) ProcessMatrix(c *fiber.Ctx) error {
 		})
 	}
 
-	rotated := h.service.Rotate90(req.Data)
+	rows := len(req.Data)
+	for _, row := range req.Data {
+		if len(row) != rows {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": "El motor matemático requiere matrices cuadradas (N x N)",
+			})
+		}
+	}
 
+	rotated := h.service.Rotate90(req.Data)
 	q, r, err := h.service.FactorizeQR(req.Data)
+	
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Error al calcular la factorización QR",
+			"error": "Error en el cálculo matemático",
 		})
 	}
 

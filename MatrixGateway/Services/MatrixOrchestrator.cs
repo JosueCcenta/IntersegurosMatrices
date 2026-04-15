@@ -28,8 +28,11 @@ public class MatrixOrchestrator : IMatrixOrchestrator
         var goResponseHttp = await client.PostAsync($"{goApiUrl}/api/process", goRequestContent);
         
         if (!goResponseHttp.IsSuccessStatusCode)
-            throw new Exception("Error al comunicarse con el motor matemático en Go.");
-
+        {
+            var errorContent = await goResponseHttp.Content.ReadAsStringAsync();
+            throw new Exception($"{errorContent}");
+        }
+        
         var goResponseString = await goResponseHttp.Content.ReadAsStringAsync();
         var goData = JsonSerializer.Deserialize<GoResponse>(goResponseString, _jsonOptions);
 
@@ -39,7 +42,10 @@ public class MatrixOrchestrator : IMatrixOrchestrator
         var nodeResponseHttp = await client.PostAsync($"{nodeApiUrl}/api/stats/calculate", nodeRequestContent);
         
         if (!nodeResponseHttp.IsSuccessStatusCode)
-            throw new Exception("Error al comunicarse con el procesador de estadísticas en Node.js.");
+        {
+            var errorContent = await nodeResponseHttp.Content.ReadAsStringAsync();
+            throw new Exception($"{errorContent}");
+        }
 
         var nodeResponseString = await nodeResponseHttp.Content.ReadAsStringAsync();
         var nodeData = JsonSerializer.Deserialize<NodeResponse>(nodeResponseString, _jsonOptions);

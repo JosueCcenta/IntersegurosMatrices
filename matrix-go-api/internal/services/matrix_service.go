@@ -17,14 +17,13 @@ func NewMatrixService() IMatrixService {
 }
 
 func (s *MatrixService) Rotate90(matrix [][]float64) [][]float64 {
-	if len(matrix) == 0 || len(matrix[0]) == 0 {
+	rows := len(matrix)
+	if rows == 0 {
 		return matrix
 	}
-
-	rows := len(matrix)
 	cols := len(matrix[0])
-	rotated := make([][]float64, cols)
 
+	rotated := make([][]float64, cols)
 	for i := 0; i < cols; i++ {
 		rotated[i] = make([]float64, rows)
 		for j := 0; j < rows; j++ {
@@ -45,14 +44,15 @@ func (s *MatrixService) FactorizeQR(input [][]float64) ([][]float64, [][]float64
 	for _, row := range input {
 		data = append(data, row...)
 	}
+	
 	denseMat := mat.NewDense(rows, cols, data)
 
 	var qr mat.QR
 	qr.Factorize(denseMat)
 
 	var q, r mat.Dense
-	qr.QTo(&q)
-	qr.RTo(&r)
+	qr.QTo(&q) 
+	qr.RTo(&r) 
 
 	return convertToSlices(&q), convertToSlices(&r), nil
 }

@@ -1,25 +1,30 @@
 <script setup>
 import { ref, watch } from 'vue'
 import axios from 'axios'
+import Swal from 'sweetalert2'
 
 const token = ref('')
 const rows = ref(3)
 const cols = ref(3)
 const matrix = ref([[1, 2, 3], [4, 5, 6], [7, 8, 9]]) 
 const loading = ref(false)
-const error = ref('')
 const results = ref(null)
 
 const gatewayUrl = import.meta.env.VITE_API_GATEWAY_URL;
 
 const login = async () => {
-  error.value = ''
   loading.value = true
   try {
     const res = await axios.post(`${gatewayUrl}/auth/login`)
     token.value = res.data.token
   } catch (err) {
-    error.value = err
+    const errorMsgLogin = err.response?.data || err.message || 'Error desconocido';
+    Swal.fire({
+            icon: 'error',
+            title: 'Error en el Login',
+            text: errorMsgLogin,
+            confirmButtonColor: '#4f46e5',
+          })
   } finally {
     loading.value = false
   }
@@ -40,7 +45,6 @@ const updateMatrix = () => {
 watch([rows, cols], updateMatrix)
 
 const analyzeMatrix = async () => {
-  error.value = ''
   results.value = null
   loading.value = true
   
@@ -52,11 +56,47 @@ const analyzeMatrix = async () => {
       { headers: { Authorization: `Bearer ${token.value}` } }
     )
     results.value = res.data
+
+    Swal.fire({
+          icon: 'success',
+          title: '¡Procesado!',
+          text: 'La matriz se analizó correctamente.',
+          timer: 1500,
+          showConfirmButton: false
+        })
+
   } catch (err) {
     if (err.response?.status === 401) {
-      error.value = 'No autorizado. Por favor, inicia sesión primero.'
+      Swal.fire({
+        icon: 'error',
+        title: 'Error en la Operación',
+        text: 'No autorizado. Por favor, inicia sesión primero.',
+        confirmButtonColor: '#4f46e5',
+      })
     } else {
-      error.value = err.response?.data || 'Error al procesar la matriz en los microservicios.'
+
+      let finalMessage = "Error inesperado en el sistema";
+
+      try {
+        const responseData = err.response?.data;
+
+        if (responseData?.message) {
+             const nestedError = JSON.parse(responseData.message);
+            finalMessage = nestedError.error || responseData.message;
+         } else if (responseData?.error) {
+             finalMessage = responseData.error;
+         } else {
+            finalMessage = err.message;
+        }
+      } catch (parseError) {
+          finalMessage = err.response?.data?.message || err.message;
+      }
+      Swal.fire({
+        icon: 'error',
+        title: 'Error en la Operación',
+        text: finalMessage,
+        confirmButtonColor: '#4f46e5',
+      })
     }
   } finally {
     loading.value = false
@@ -74,9 +114,6 @@ const formatNum = (num) => Number(num.toFixed(4))
       <p class="text-gray-500 mt-2">Arquitectura de Microservicios: .NET 10 Gateway ➔ Go ➔ Node.js</p>
     </header>
 
-    <div v-if="error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6 text-center shadow-sm">
-      {{ error }}
-    </div>
 
     <section v-if="!token" class="bg-white rounded-xl shadow-md p-8 text-center max-w-md mx-auto border border-gray-100">
       <div class="mb-4 bg-blue-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto text-blue-500">
