@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  go-api:
+    build: ./matrix-go-api
+    container_name: matrix-go-api
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+
+  node-api:
+    build: ./matrix-node-api
+    container_name: matrix-node-api
+    ports:
+      - "4000:4000"
+    restart: unless-stopped
+
+  gateway:
+    build: ./MatrixGateway
+    container_name: matrix-gateway
+    ports:
+      - "5000:5000"
+    depends_on:
+      - go-api
+      - node-api
+    restart: unless-stopped

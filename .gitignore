@@ -1,0 +1,33 @@
+# --- Node.js / Vue ---
+node_modules/
+dist/
+dist-ssr/
+*.local
+.npm
+.eslintcache
+
+# --- .NET ---
+bin/
+obj/
+.vs/
+.vscode/
+appsettings.Development.json
+*.user
+*.sln.dotSettings.user
+
+# --- Go ---
+/matrix-go-api/main
+/matrix-go-api/matrix-go-api
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# --- Docker ---
+.docker/
+*.log
+
+# --- OS ---
+.DS_Store
+Thumbs.db
