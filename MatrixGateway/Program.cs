@@ -30,7 +30,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowVue", policy =>
     {
-        policy.WithOrigins("http://localhost:5173") 
+        policy.WithOrigins("http://localhost:5173","https://matrix-frontend-798911222692.us-central1.run.app") 
               .AllowAnyHeader()
               .AllowAnyMethod();
     });

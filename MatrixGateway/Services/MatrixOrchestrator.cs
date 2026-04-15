@@ -7,11 +7,13 @@ using MatrixGateway.Models;
 public class MatrixOrchestrator : IMatrixOrchestrator
 {
     private readonly IHttpClientFactory _httpClientFactory;
+    private readonly IConfiguration _config;
     private readonly JsonSerializerOptions _jsonOptions;
 
-    public MatrixOrchestrator(IHttpClientFactory httpClientFactory)
+    public MatrixOrchestrator(IHttpClientFactory httpClientFactory, IConfiguration config)
     {
         _httpClientFactory = httpClientFactory;
+        _config = config;
         _jsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
     }
 
@@ -19,8 +21,11 @@ public class MatrixOrchestrator : IMatrixOrchestrator
     {
         var client = _httpClientFactory.CreateClient();
 
+        string goApiUrl = _config["GO_API_URL"];
+        string nodeApiUrl = _config["NODE_API_URL"];
+
         var goRequestContent = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
-        var goResponseHttp = await client.PostAsync("http://go-api:3000/api/process", goRequestContent);
+        var goResponseHttp = await client.PostAsync($"{goApiUrl}/api/process", goRequestContent);
         
         if (!goResponseHttp.IsSuccessStatusCode)
             throw new Exception("Error al comunicarse con el motor matemático en Go.");
@@ -31,7 +36,7 @@ public class MatrixOrchestrator : IMatrixOrchestrator
         var nodePayload = new { rotated = goData!.Rotated };
         var nodeRequestContent = new StringContent(JsonSerializer.Serialize(nodePayload), Encoding.UTF8, "application/json");
         
-        var nodeResponseHttp = await client.PostAsync("http://node-api:4000/api/stats/calculate", nodeRequestContent);
+        var nodeResponseHttp = await client.PostAsync($"{nodeApiUrl}/api/stats/calculate", nodeRequestContent);
         
         if (!nodeResponseHttp.IsSuccessStatusCode)
             throw new Exception("Error al comunicarse con el procesador de estadísticas en Node.js.");

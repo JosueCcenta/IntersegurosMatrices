@@ -10,8 +10,7 @@ const loading = ref(false)
 const error = ref('')
 const results = ref(null)
 
-const gatewayUrl = 'http://localhost:5000/api/gateway'
-
+const gatewayUrl = import.meta.env.VITE_API_GATEWAY_URL;
 
 const login = async () => {
   error.value = ''
